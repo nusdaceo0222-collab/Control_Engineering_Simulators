@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nyquist + Bode Plot 시뮬레이터</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;font-family:Arial,'Noto Sans KR',sans-serif;background:#0b1020;color:#fff;overflow:hidden}
+.app{width:100vw;height:100vh;display:grid;grid-template-columns:310px 1fr}
+.panel{background:#10172a;border-right:1px solid #293554;padding:14px;overflow:auto}
+.panel h1{font-size:23px;margin:0 0 6px}
+.panel p{font-size:13px;line-height:1.45;color:#b9c4e8;margin:0 0 14px}
+.selects{display:grid;gap:8px;margin:12px 0}
+select{height:36px;border-radius:8px;border:1px solid #34405f;background:#0b1020;color:white;padding:0 8px}
+.control{margin:14px 0}
+.control label{display:flex;justify-content:space-between;font-size:14px;color:#d9e2ff;margin-bottom:6px}
+.control b{color:#fff}
+input[type=range]{width:100%}
+.buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+button{height:35px;border:0;border-radius:8px;background:white;color:#10172a;font-weight:900;cursor:pointer}
+.info{margin-top:12px;background:#0b1020;border:1px solid #293554;border-radius:12px;padding:12px;font-size:13px;line-height:1.65;color:#d9e2ff}
+.info b{color:#fff}
+.main{position:relative;background:#f8fafc;overflow:hidden}
+.topbar{position:absolute;left:16px;right:16px;top:12px;min-height:44px;background:rgba(255,255,255,.94);border:1px solid #e2e8f0;border-radius:12px;display:flex;align-items:center;gap:14px;padding:8px 14px;color:#111827;font-size:14px;font-weight:800;z-index:3}
+.legend{margin-left:auto;display:flex;gap:12px;font-weight:700;color:#334155}
+.item{display:flex;align-items:center;gap:5px}
+.dot{width:12px;height:12px;border-radius:50%}
+.nyq{background:#7c3aed}.mirror{background:#0ea5e9}.crit{background:#ef4444}.nowDot{background:#16a34a}
+.mainGrid{position:absolute;left:12px;right:12px;top:66px;bottom:12px;display:grid;grid-template-rows:58% 42%;gap:10px}
+.plotBox{position:relative;background:white;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(15,23,42,.12)}
+.caption{position:absolute;left:16px;bottom:10px;color:#334155;font-size:12px;background:rgba(255,255,255,.9);border:1px solid #e2e8f0;border-radius:10px;padding:6px 9px;line-height:1.4}
+svg{width:100%;height:100%;display:block}
+.grid{stroke:#e5e7eb;stroke-width:1}
+.axis{stroke:#111827;stroke-width:2}
+.unitCircle{fill:none;stroke:#94a3b8;stroke-width:1.5;stroke-dasharray:5 5}
+.preview{fill:none;stroke:#c4b5fd;stroke-width:7;stroke-linecap:round;opacity:.32}
+.previewNeg{fill:none;stroke:#bae6fd;stroke-width:5;stroke-linecap:round;opacity:.36}
+.nyquist{fill:none;stroke:#7c3aed;stroke-width:3.2;stroke-linecap:round}
+.nyquistNeg{fill:none;stroke:#0ea5e9;stroke-width:2.4;stroke-linecap:round;stroke-dasharray:6 5}
+.point{fill:#16a34a;stroke:white;stroke-width:3}
+.critical{fill:#ef4444;stroke:white;stroke-width:3}
+.arrow{stroke:#7c3aed;stroke-width:3;marker-end:url(#arr)}
+.encLine{stroke:#ef4444;stroke-width:2;stroke-dasharray:6 4;opacity:.8}
+.encText{fill:#ef4444;font-size:13px;font-weight:900}
+.label{fill:#111827;font-size:13px;font-weight:800}
+.small{fill:#475569;font-size:12px}
+.bodeMag{fill:none;stroke:#2563eb;stroke-width:3}
+.bodePhase{fill:none;stroke:#dc2626;stroke-width:3}
+.bodeCursor{stroke:#16a34a;stroke-width:2.5}
+.stable{color:#16a34a}
+.unstable{color:#dc2626}
+@media(max-width:760px){
+  .app{grid-template-columns:132px 1fr}
+  .panel{padding:8px}
+  .panel h1{font-size:16px}
+  .panel p,.info{display:none}
+  .control{margin:10px 0}
+  .control label{font-size:11px;display:block}
+  .control b{display:block}
+  .buttons{grid-template-columns:1fr}
+  .topbar{left:6px;right:6px;top:6px;font-size:11px;gap:6px;flex-wrap:wrap;padding:6px}
+  .legend{display:none}
+  .mainGrid{left:6px;right:6px;top:78px;bottom:6px;grid-template-rows:56% 44%}
+  .caption{display:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="panel">
+    <h1>Nyquist Plot</h1>
+    <p>Nyquist 궤적, -1점 감김수, Bode Plot을 함께 표시합니다.</p>
+
+    <div class="selects">
+      <select id="preset">
+        <option value="ex1">예제 1: L(s)=K/[s(s+4)(s+6)]</option>
+        <option value="ex2">예제 2: L(s)=K/[7s²+5s+3]</option>
+        <option value="ex3">예제 3: L(s)=e^(-0.5s)/[s(s+2)]</option>
+        <option value="ex4">예제 4: L(s)=K/[s(s+10)]</option>
+      </select>
+    </div>
+
+    <div class="control">
+      <label>이득 K <b id="kVal">1.0</b></label>
+      <input id="k" type="range" min="0.05" max="300" step="0.1" value="1">
+    </div>
+
+    <div class="control">
+      <label>주파수 ω <b id="wVal">1.00</b></label>
+      <input id="w" type="range" min="-2" max="2" step="0.005" value="0">
+    </div>
+
+    <div class="control">
+      <label>축 확대 <b id="zoomVal">1.0x</b></label>
+      <input id="zoom" type="range" min="0.1" max="20" step="0.1" value="1">
+    </div>
+
+    <div class="control">
+      <label>재생속도 <b id="speedVal">1.0x</b></label>
+      <input id="speed" type="range" min="0.2" max="3" step="0.1" value="1">
+    </div>
+
+    <div class="buttons">
+      <button id="play">자동재생</button>
+      <button id="reset">ω=1</button>
+    </div>
+
+    <div class="info">
+      <div>현재 L(jω): <b id="ljwText">-</b></div>
+      <div>|L(jω)|: <b id="magText">-</b></div>
+      <div>∠L(jω): <b id="phaseText">-</b></div>
+      <div>-1점 거리: <b id="distText">-</b></div>
+      <br>
+      <div>감김수 N: <b id="encText">-</b></div>
+      <div>Nyquist 안정성: <b id="stableText">-</b></div>
+      <div style="color:#9fb0d8">※ 단순 교육용 근사 판정. 시간지연 예제는 실제 e^{-jωT} 위상지연으로 표시.</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <span id="tfText">L(s)=K/[s(s+4)(s+6)]</span>
+      <span id="curText">K=1.0, ω=1.00 rad/s</span>
+      <div class="legend">
+        <span class="item"><span class="dot nyq"></span>Nyquist</span>
+        <span class="item"><span class="dot mirror"></span>대칭</span>
+        <span class="item"><span class="dot crit"></span>-1점</span>
+        <span class="item"><span class="dot nowDot"></span>현재점</span>
+      </div>
+    </div>
+
+    <div class="mainGrid">
+      <div class="plotBox">
+        <svg id="nyqSvg" viewBox="0 0 920 420">
+          <defs>
+            <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L9,3 z" fill="#7c3aed"/>
+            </marker>
+          </defs>
+          <g id="grid"></g>
+          <line id="xAxis" class="axis"/>
+          <line id="yAxis" class="axis"/>
+          <circle id="unitCircle" class="unitCircle"/>
+          <g id="plotGroup"></g>
+          <g id="encGroup"></g>
+          <circle id="crit" class="critical" r="8"/>
+          <circle id="now" class="point" r="8"/>
+          <text x="865" y="215" class="label">Re</text>
+          <text x="465" y="24" class="label">Im</text>
+          <text id="minusOne" class="label">-1</text>
+        </svg>
+        <div class="caption">연한 선은 전체 궤적 미리보기, 진한 선은 Nyquist 궤적입니다. 빨간 선은 -1점 기준 감김각 변화를 보여줍니다.</div>
+      </div>
+
+      <div class="plotBox">
+        <svg id="bodeSvg" viewBox="0 0 920 300">
+          <g id="bodeGrid"></g>
+          <path id="magPath" class="bodeMag"/>
+          <path id="phasePath" class="bodePhase"/>
+          <line id="bodeCursor" class="bodeCursor"/>
+          <circle id="magDot" class="point" r="6"/>
+          <circle id="phaseDot" class="critical" r="6"/>
+          <text x="460" y="22" text-anchor="middle" class="label">Bode Plot: 크기(dB, 파랑) / 위상(deg, 빨강)</text>
+          <text x="835" y="278" class="small">log ω</text>
+          <text x="20" y="45" class="small">dB</text>
+          <text x="28" y="275" class="small">deg</text>
+        </svg>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const preset = $('preset');
+const kSlider = $('k');
+const wSlider = $('w');
+const zoomSlider = $('zoom');
+const speedSlider = $('speed');
+
+const grid = $('grid');
+const plotGroup = $('plotGroup');
+const encGroup = $('encGroup');
+const xAxis = $('xAxis');
+const yAxis = $('yAxis');
+const unitCircle = $('unitCircle');
+const crit = $('crit');
+const now = $('now');
+const minusOne = $('minusOne');
+
+const bodeGrid = $('bodeGrid');
+const magPath = $('magPath');
+const phasePath = $('phasePath');
+const bodeCursor = $('bodeCursor');
+const magDot = $('magDot');
+const phaseDot = $('phaseDot');
+
+const kVal = $('kVal');
+const wVal = $('wVal');
+const zoomVal = $('zoomVal');
+const speedVal = $('speedVal');
+const tfText = $('tfText');
+const curText = $('curText');
+const ljwText = $('ljwText');
+const magText = $('magText');
+const phaseText = $('phaseText');
+const distText = $('distText');
+const stableText = $('stableText');
+const encText = $('encText');
+
+let cx = 460;
+let cy = 212;
+let scale = 85;
+let playing = false;
+let last = null;
+
+const systems = {
+  ex1: { tf:'L(s)=K/[s(s+4)(s+6)]', num:[1], den:[1,10,24,0], P:0 },
+  ex2: { tf:'L(s)=K/[7s²+5s+3]', num:[1], den:[7,5,3], P:0 },
+  ex3: { tf:'L(s)=e^(-0.5s)/[s(s+2)]', num:[1], den:[1,2,0], delay:0.5, noK:true, P:0 },
+  ex4: { tf:'L(s)=K/[s(s+10)]', num:[1], den:[1,10,0], P:0 }
+};
+
+function c(re, im){ return {re, im}; }
+function add(a,b){ return c(a.re+b.re, a.im+b.im); }
+function sub(a,b){ return c(a.re-b.re, a.im-b.im); }
+function mul(a,b){ return c(a.re*b.re-a.im*b.im, a.re*b.im+a.im*b.re); }
+function div(a,b){
+  const d = b.re*b.re + b.im*b.im;
+  return c((a.re*b.re+a.im*b.im)/d, (a.im*b.re-a.re*b.im)/d);
+}
+function abs(a){ return Math.hypot(a.re, a.im); }
+function arg(a){ return Math.atan2(a.im, a.re); }
+
+function evalPoly(coef, s){
+  let y = c(0,0);
+  for(const a of coef){ y = add(mul(y, s), c(a,0)); }
+  return y;
+}
+
+function L(sys, w, K){
+  const s = c(0, w);
+  const gain = sys.noK ? 1 : K;
+  let G = mul(c(gain,0), div(evalPoly(sys.num, s), evalPoly(sys.den, s)));
+
+  if(sys.delay){
+    const th = -w * sys.delay;
+    G = mul(G, c(Math.cos(th), Math.sin(th)));
+  }
+  return G;
+}
+
+function X(re){ return cx + re * scale; }
+function Y(im){ return cy - im * scale; }
+
+function logspace(a,b,n){
+  const arr = [];
+  for(let i=0;i<n;i++){
+    const t = i/(n-1);
+    arr.push(Math.pow(10, a + (b-a)*t));
+  }
+  return arr;
+}
+
+function makeGrid(){
+  scale = 85 * (+zoomSlider.value);
+  let s = '';
+
+  for(let re=-8; re<=8; re++){
+    const x = X(re);
+    s += `<line x1="${x}" y1="0" x2="${x}" y2="420" class="grid"/>`;
+    if(re !== 0) s += `<text x="${x+3}" y="230" class="small">${re}</text>`;
+  }
+
+  for(let im=-4; im<=4; im++){
+    const y = Y(im);
+    s += `<line x1="0" y1="${y}" x2="920" y2="${y}" class="grid"/>`;
+    if(im !== 0) s += `<text x="468" y="${y-3}" class="small">${im}</text>`;
+  }
+
+  grid.innerHTML = s;
+  xAxis.setAttribute('x1',0);
+  xAxis.setAttribute('x2',920);
+  xAxis.setAttribute('y1',cy);
+  xAxis.setAttribute('y2',cy);
+  yAxis.setAttribute('x1',cx);
+  yAxis.setAttribute('x2',cx);
+  yAxis.setAttribute('y1',0);
+  yAxis.setAttribute('y2',420);
+  unitCircle.setAttribute('cx',cx);
+  unitCircle.setAttribute('cy',cy);
+  unitCircle.setAttribute('r',scale);
+  crit.setAttribute('cx',X(-1));
+  crit.setAttribute('cy',Y(0));
+  minusOne.setAttribute('x',X(-1)-10);
+  minusOne.setAttribute('y',Y(0)+25);
+}
+
+function path(points){
+  let d = '';
+  let started = false;
+  points.forEach(p => {
+    if(Number.isFinite(p.re) && Number.isFinite(p.im) && Math.abs(p.re)<100 && Math.abs(p.im)<100){
+      d += (started ? 'L' : 'M') + X(p.re).toFixed(1) + ' ' + Y(p.im).toFixed(1) + ' ';
+      started = true;
+    } else {
+      started = false;
+    }
+  });
+  return d;
+}
+
+function angleInfo(points){
+  let total = 0;
+  let prev = null;
+  for(const p of points){
+    const z = sub(p, c(-1,0));
+    const th = arg(z);
+    if(prev !== null){
+      let d = th - prev;
+      while(d > Math.PI) d -= 2*Math.PI;
+      while(d < -Math.PI) d += 2*Math.PI;
+      total += d;
+    }
+    prev = th;
+  }
+  return total/(2*Math.PI);
+}
+
+function makeBodeGrid(){
+  let s = '';
+  for(let i=0;i<=6;i++){
+    const x = 70 + i*790/6;
+    s += `<line x1="${x}" y1="36" x2="${x}" y2="270" class="grid"/>`;
+  }
+  for(let j=0;j<=4;j++){
+    const y = 50 + j*45;
+    s += `<line x1="70" y1="${y}" x2="860" y2="${y}" class="grid"/>`;
+  }
+  s += `<line x1="70" y1="150" x2="860" y2="150" class="axis"/>`;
+  s += `<line x1="70" y1="36" x2="70" y2="270" class="axis"/>`;
+  bodeGrid.innerHTML = s;
+}
+
+function bodeX(logw){ return 70 + (logw+2)/4*790; }
+function magY(db){ return 150 - db/80*95; }
+function phaseY(deg){ return 150 - deg/360*95; }
+
+function drawBode(sys, K, ws, wNow){
+  const pts = ws.map(w => {
+    const p = L(sys, w, K);
+    return {
+      w,
+      logw: Math.log10(w),
+      mag: 20*Math.log10(Math.max(abs(p),1e-9)),
+      ph: arg(p)*180/Math.PI
+    };
+  });
+
+  let md = '';
+  let pd = '';
+
+  pts.forEach((p,i) => {
+    md += (i ? 'L' : 'M') + bodeX(p.logw).toFixed(1) + ' ' + magY(p.mag).toFixed(1) + ' ';
+    pd += (i ? 'L' : 'M') + bodeX(p.logw).toFixed(1) + ' ' + phaseY(p.ph).toFixed(1) + ' ';
+  });
+
+  magPath.setAttribute('d', md);
+  phasePath.setAttribute('d', pd);
+
+  const pNow = L(sys, wNow, K);
+  const db = 20*Math.log10(Math.max(abs(pNow),1e-9));
+  const ph = arg(pNow)*180/Math.PI;
+  const x = bodeX(Math.log10(wNow));
+
+  bodeCursor.setAttribute('x1', x);
+  bodeCursor.setAttribute('x2', x);
+  bodeCursor.setAttribute('y1', 34);
+  bodeCursor.setAttribute('y2', 272);
+
+  magDot.setAttribute('cx', x);
+  magDot.setAttribute('cy', magY(db));
+
+  phaseDot.setAttribute('cx', x);
+  phaseDot.setAttribute('cy', phaseY(ph));
+}
+
+function draw(){
+  const sys = systems[preset.value];
+  const K = +kSlider.value;
+  const w = Math.pow(10, +wSlider.value);
+
+  makeGrid();
+  makeBodeGrid();
+
+  kVal.textContent = sys.noK ? '고정' : K.toFixed(1);
+  wVal.textContent = w.toFixed(2);
+  zoomVal.textContent = (+zoomSlider.value).toFixed(1) + 'x';
+  speedVal.textContent = (+speedSlider.value).toFixed(1) + 'x';
+
+  tfText.textContent = sys.tf;
+  curText.textContent = `${sys.noK ? 'K 없음' : 'K='+K.toFixed(1)+','} ω=${w.toFixed(2)} rad/s`;
+
+  const ws = logspace(-2, 2, 720);
+  const pos = ws.map(x => L(sys, x, K));
+  const neg = [...pos].reverse().map(p => c(p.re, -p.im));
+  const all = pos.concat(neg);
+
+  const pNow = L(sys, w, K);
+  const mag = abs(pNow);
+  const ph = arg(pNow)*180/Math.PI;
+  const dist = abs(sub(pNow, c(-1,0)));
+
+  ljwText.textContent = `${pNow.re.toFixed(3)} ${pNow.im>=0?'+':'-'} j${Math.abs(pNow.im).toFixed(3)}`;
+  magText.textContent = mag.toFixed(3);
+  phaseText.textContent = ph.toFixed(1) + '°';
+  distText.textContent = dist.toFixed(3);
+
+  const enc = angleInfo(all);
+  const N = Math.round(enc);
+  encText.textContent = `${enc.toFixed(2)}회 ≈ ${N}회`;
+
+  const stable = (N + sys.P) === 0;
+  stableText.textContent = stable ? '안정으로 판단' : '불안정 가능';
+  stableText.className = stable ? 'stable' : 'unstable';
+
+  let idx = Math.floor((Math.log10(w)+2)/4*(pos.length-1));
+  idx = Math.max(2, Math.min(pos.length-2, idx));
+  const pA = pos[idx-2];
+  const pB = pos[idx];
+
+  const preview = `
+    <path d="${path(pos)}" class="preview"/>
+    <path d="${path(neg)}" class="previewNeg"/>
+  `;
+
+  const main = `
+    <path d="${path(pos)}" class="nyquist"/>
+    <path d="${path(neg)}" class="nyquistNeg"/>
+    <line x1="${X(pA.re)}" y1="${Y(pA.im)}" x2="${X(pB.re)}" y2="${Y(pB.im)}" class="arrow"/>
+  `;
+
+  plotGroup.innerHTML = preview + main;
+
+  encGroup.innerHTML = `
+    <line x1="${X(-1)}" y1="${Y(0)}" x2="${X(pNow.re)}" y2="${Y(pNow.im)}" class="encLine"/>
+    <text x="${X(-1)+12}" y="${Y(0)-14}" class="encText">N≈${N}</text>
+  `;
+
+  now.setAttribute('cx', X(pNow.re));
+  now.setAttribute('cy', Y(pNow.im));
+
+  drawBode(sys, K, ws, w);
+}
+
+[preset, kSlider, wSlider, zoomSlider, speedSlider].forEach(e => {
+  e.addEventListener('input', draw);
+});
+
+$('reset').onclick = () => {
+  wSlider.value = 0;
+  draw();
+};
+
+$('play').onclick = () => {
+  playing = !playing;
+  $('play').textContent = playing ? '정지' : '자동재생';
+  last = null;
+  if(playing) requestAnimationFrame(animate);
+};
+
+function animate(ts){
+  if(!playing) return;
+  if(last === null) last = ts;
+  const dt = (ts-last)/1000;
+  last = ts;
+
+  let v = +wSlider.value + dt*(+speedSlider.value)*0.65;
+  if(v > 2) v = -2;
+  wSlider.value = v;
+
+  draw();
+  requestAnimationFrame(animate);
+}
+
+draw();
+</script>
+</body>
+</html>
