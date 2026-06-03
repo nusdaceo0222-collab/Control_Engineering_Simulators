@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Root Locus 시뮬레이터</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;font-family:Arial,'Noto Sans KR',sans-serif;background:#0b1020;color:#fff;overflow:hidden}.app{height:100vh;display:grid;grid-template-columns:300px 1fr}.panel{background:#10172a;border-right:1px solid #293554;padding:14px;overflow:auto}.panel h1{font-size:22px;margin:0 0 6px}.panel p{font-size:13px;line-height:1.45;color:#b9c4e8;margin:0 0 14px}.control{margin:13px 0}.control label{display:flex;justify-content:space-between;font-size:14px;color:#d9e2ff;margin-bottom:6px}.control b{color:#fff}input[type=range]{width:100%}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}button{height:34px;border:0;border-radius:8px;background:white;color:#10172a;font-weight:900}.selects{display:grid;gap:8px;margin:12px 0}select{height:34px;border-radius:8px;border:1px solid #34405f;background:#0b1020;color:white;padding:0 8px}.info{margin-top:12px;background:#0b1020;border:1px solid #293554;border-radius:12px;padding:12px;font-size:13px;line-height:1.6;color:#d9e2ff}.info b{color:#fff}.main{position:relative;background:#f8fafc;overflow:hidden}.topbar{position:absolute;left:16px;right:16px;top:12px;height:44px;background:rgba(255,255,255,.9);border:1px solid #e2e8f0;border-radius:12px;display:flex;align-items:center;gap:14px;padding:0 14px;color:#111827;font-size:14px;font-weight:800;z-index:2}.legend{margin-left:auto;display:flex;gap:12px;font-weight:700;color:#334155}.item{display:flex;align-items:center;gap:5px}.dot{width:12px;height:12px;border-radius:50%}.xmark{font-size:20px;color:#dc2626;font-weight:900}.circle{background:#2563eb;border:2px solid #1e40af}.branch{background:#7c3aed}.closed{background:#16a34a}.caption{position:absolute;left:18px;bottom:14px;color:#334155;font-size:13px;background:rgba(255,255,255,.88);border:1px solid #e2e8f0;border-radius:10px;padding:8px 10px;line-height:1.45}svg{width:100%;height:100%;display:block}.grid{stroke:#e5e7eb;stroke-width:1}.axis{stroke:#111827;stroke-width:2}.locus{fill:none;stroke:#7c3aed;stroke-width:3;stroke-linecap:round}.pole{stroke:#dc2626;stroke-width:4;stroke-linecap:round}.zero{fill:white;stroke:#2563eb;stroke-width:4}.closedPole{fill:#16a34a;stroke:white;stroke-width:3}.asym{stroke:#f97316;stroke-width:2;stroke-dasharray:8 6}.label{fill:#111827;font-size:13px;font-weight:800}.small{fill:#475569;font-size:12px}.stable{color:#16a34a}.unstable{color:#dc2626}@media(max-width:760px){.app{grid-template-columns:130px 1fr}.panel{padding:8px}.panel h1{font-size:16px}.panel p,.info{display:none}.control{margin:9px 0}.control label{font-size:11px;display:block}.control b{display:block}.buttons{grid-template-columns:1fr}.topbar{left:6px;right:6px;top:6px;font-size:11px;height:auto;min-height:38px;flex-wrap:wrap;gap:6px;padding:6px}.legend{display:none}.caption{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="panel">
+    <h1>Root Locus</h1>
+    <p>이득 K가 변할 때 폐루프 극점의 이동을 표시합니다.</p>
+    <div class="selects">
+      <select id="preset">
+        <option value="ex1">예제 1: G=K/[s(s+5)]</option>
+        <option value="ex2">예제 2: G=K/[(s+2)(s+6)]</option>
+        <option value="ex3">예제 3: G=K/[s(s+2)(s+4)]</option>
+        <option value="ex4">예제 4: G=K(s+2)/[s(s+1)(s+4)]</option>
+      </select>
+    </div>
+    <div class="control"><label>이득 K <b id="kVal">10.0</b></label><input id="k" type="range" min="0" max="200" step="0.1" value="10"></div>
+    <div class="control"><label>축 확대 <b id="zoomVal">1.0x</b></label><input id="zoom" type="range" min="0.6" max="2.2" step="0.1" value="1"></div>
+    <div class="control"><label>재생속도 <b id="speedVal">1.0x</b></label><input id="speed" type="range" min="0.2" max="3" step="0.1" value="1"></div>
+    <div class="buttons"><button id="play">자동재생</button><button id="reset">K=0</button></div>
+    <div class="info">
+      <div>폐루프 특성방정식</div>
+      <b id="charEq">D(s)+KN(s)=0</b><br><br>
+      현재 폐루프 극점:<br><span id="polesText"></span><br>
+      안정성: <b id="stableText">-</b>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <span id="tfText">G(s)H(s)=K/[s(s+5)]</span>
+      <span id="currentK">K=10.0</span>
+      <div class="legend"><span class="item"><span class="xmark">×</span>개루프 극점</span><span class="item"><span class="dot circle"></span>영점</span><span class="item"><span class="dot branch"></span>근궤적</span><span class="item"><span class="dot closed"></span>현재 폐루프 극점</span></div>
+    </div>
+    <svg id="svg" viewBox="0 0 900 640">
+      <g id="grid"></g><line id="xAxis" class="axis"/><line id="yAxis" class="axis"/><g id="asymGroup"></g><g id="locusGroup"></g><g id="pointsGroup"></g>
+      <text x="848" y="337" class="label">Re</text><text x="463" y="34" class="label">Im</text>
+    </svg>
+    <div class="caption">근궤적은 K가 0에서 ∞로 변할 때 폐루프 극점이 움직이는 경로입니다.</div>
+  </main>
+</div>
+<script>
+const $=id=>document.getElementById(id);const grid=$('grid'),xAxis=$('xAxis'),yAxis=$('yAxis'),locusGroup=$('locusGroup'),pointsGroup=$('pointsGroup'),asymGroup=$('asymGroup');const kSlider=$('k'),zoomSlider=$('zoom'),speedSlider=$('speed'),preset=$('preset');const kVal=$('kVal'),zoomVal=$('zoomVal'),speedVal=$('speedVal'),tfText=$('tfText'),currentK=$('currentK'),polesText=$('polesText'),stableText=$('stableText'),charEq=$('charEq');let cx=455,cy=330,scale=70,playing=false;
+const systems={
+  ex1:{poles:[0,-5],zeros:[],tf:'G(s)H(s)=K/[s(s+5)]',eq:'s²+5s+K=0',den:[1,5,0],num:[1]},
+  ex2:{poles:[-2,-6],zeros:[],tf:'G(s)H(s)=K/[(s+2)(s+6)]',eq:'s²+8s+(12+K)=0',den:[1,8,12],num:[1]},
+  ex3:{poles:[0,-2,-4],zeros:[],tf:'G(s)H(s)=K/[s(s+2)(s+4)]',eq:'s³+6s²+8s+K=0',den:[1,6,8,0],num:[1]},
+  ex4:{poles:[0,-1,-4],zeros:[-2],tf:'G(s)H(s)=K(s+2)/[s(s+1)(s+4)]',eq:'s³+5s²+(4+K)s+2K=0',den:[1,5,4,0],num:[1,2]}
+};
+function polyAdd(a,b){let n=Math.max(a.length,b.length),r=Array(n).fill(0);for(let i=0;i<n;i++)r[n-1-i]=(a[a.length-1-i]||0)+(b[b.length-1-i]||0);return r}function charPoly(sys,K){let den=sys.den.slice(),num=sys.num.map(x=>x*K);let pad=Array(den.length-num.length).fill(0).concat(num);return polyAdd(den,pad)}function cbrt(x){return x<0?-Math.pow(-x,1/3):Math.pow(x,1/3)}
+function roots(coeff){coeff=coeff.slice();while(coeff.length>1&&Math.abs(coeff[0])<1e-12)coeff.shift();let n=coeff.length-1;if(n===1)return[{re:-coeff[1]/coeff[0],im:0}];if(n===2){let[a,b,c]=coeff,d=b*b-4*a*c;if(d>=0)return[{re:(-b+Math.sqrt(d))/(2*a),im:0},{re:(-b-Math.sqrt(d))/(2*a),im:0}];let re=-b/(2*a),im=Math.sqrt(-d)/(2*a);return[{re,im},{re,im:-im}]}if(n===3){let[a,b,c,d]=coeff;b/=a;c/=a;d/=a;let p=c-b*b/3,q=2*b*b*b/27-b*c/3+d,D=q*q/4+p*p*p/27,shift=-b/3;if(D>=0){let A=cbrt(-q/2+Math.sqrt(D)),B=cbrt(-q/2-Math.sqrt(D));return[{re:A+B+shift,im:0},{re:-(A+B)/2+shift,im:Math.sqrt(3)*(A-B)/2},{re:-(A+B)/2+shift,im:-Math.sqrt(3)*(A-B)/2}]}let R=2*Math.sqrt(-p/3),theta=Math.acos((3*q/(2*p))*Math.sqrt(-3/p));return[0,1,2].map(k=>({re:R*Math.cos((theta-2*Math.PI*k)/3)+shift,im:0}))}return[]}
+function X(re){return cx+re*scale}function Y(im){return cy-im*scale}function makeGrid(){scale=70*(+zoomSlider.value);let s='';for(let re=-10;re<=6;re++){let x=X(re);s+=`<line x1="${x}" y1="0" x2="${x}" y2="640" class="grid"/>`;if(re%2===0)s+=`<text x="${x+3}" y="348" class="small">${re}</text>`}for(let im=-5;im<=5;im++){let y=Y(im);s+=`<line x1="0" y1="${y}" x2="900" y2="${y}" class="grid"/>`;if(im!==0)s+=`<text x="462" y="${y-3}" class="small">${im}</text>`}grid.innerHTML=s;xAxis.setAttribute('x1',0);xAxis.setAttribute('x2',900);xAxis.setAttribute('y1',cy);xAxis.setAttribute('y2',cy);yAxis.setAttribute('x1',cx);yAxis.setAttribute('x2',cx);yAxis.setAttribute('y1',0);yAxis.setAttribute('y2',640)}
+function distance(a,b){return Math.hypot(a.re-b.re,a.im-b.im)}function computeBranches(sys){let Ks=[];for(let i=0;i<=260;i++)Ks.push(200*Math.pow(i/260,1.7));let branches=[];for(let idx=0;idx<Ks.length;idx++){let r=roots(charPoly(sys,Ks[idx]));if(idx===0){r.sort((a,b)=>a.re-b.re);branches=r.map(x=>[x]);continue}let used=Array(r.length).fill(false);for(let b=0;b<branches.length;b++){let last=branches[b][branches[b].length-1],best=0,bd=1e9;for(let j=0;j<r.length;j++)if(!used[j]&&distance(last,r[j])<bd){bd=distance(last,r[j]);best=j}used[best]=true;branches[b].push(r[best])}}return branches}
+function drawAsym(sys){let n=sys.poles.length,m=sys.zeros.length;if(n<=m){asymGroup.innerHTML='';return}let centroid=(sys.poles.reduce((a,b)=>a+b,0)-sys.zeros.reduce((a,b)=>a+b,0))/(n-m);let s='';for(let q=0;q<n-m;q++){let ang=(2*q+1)*Math.PI/(n-m);s+=`<line x1="${X(centroid-20*Math.cos(ang))}" y1="${Y(-20*Math.sin(ang))}" x2="${X(centroid+20*Math.cos(ang))}" y2="${Y(20*Math.sin(ang))}" class="asym"/>`}s+=`<circle cx="${X(centroid)}" cy="${Y(0)}" r="4" fill="#f97316"/>`;asymGroup.innerHTML=s}
+function draw(){let sys=systems[preset.value],K=+kSlider.value;makeGrid();tfText.textContent=sys.tf;charEq.textContent=sys.eq;kVal.textContent=K.toFixed(1);zoomVal.textContent=(+zoomSlider.value).toFixed(1)+'x';speedVal.textContent=(+speedSlider.value).toFixed(1)+'x';currentK.textContent='K='+K.toFixed(1);drawAsym(sys);let branches=computeBranches(sys),loc='';branches.forEach(br=>{let d='';br.forEach((p,i)=>d+=(i?'L':'M')+X(p.re).toFixed(1)+' '+Y(p.im).toFixed(1)+' ');loc+=`<path d="${d}" class="locus"/>`});locusGroup.innerHTML=loc;let pg='';sys.poles.forEach(p=>{pg+=`<line x1="${X(p)-9}" y1="${Y(0)-9}" x2="${X(p)+9}" y2="${Y(0)+9}" class="pole"/><line x1="${X(p)+9}" y1="${Y(0)-9}" x2="${X(p)-9}" y2="${Y(0)+9}" class="pole"/>`});sys.zeros.forEach(z=>pg+=`<circle cx="${X(z)}" cy="${Y(0)}" r="9" class="zero"/>`);let cr=roots(charPoly(sys,K));cr.forEach(p=>pg+=`<circle cx="${X(p.re)}" cy="${Y(p.im)}" r="9" class="closedPole"/>`);pointsGroup.innerHTML=pg;let stable=cr.every(p=>p.re<0.0001);stableText.textContent=stable?'안정':'불안정';stableText.className=stable?'stable':'unstable';polesText.innerHTML=cr.map(p=>`${p.re.toFixed(3)} ${p.im>=0?'+':'-'} j${Math.abs(p.im).toFixed(3)}`).join('<br>')}
+[preset,kSlider,zoomSlider,speedSlider].forEach(e=>e.addEventListener('input',draw));$('reset').onclick=()=>{kSlider.value=0;draw()};$('play').onclick=()=>{playing=!playing;$('play').textContent=playing?'정지':'자동재생';if(playing)animate()};function animate(){if(!playing)return;let k=+kSlider.value+(+speedSlider.value)*1.2;if(k>200)k=0;kSlider.value=k;draw();requestAnimationFrame(animate)}draw();
+</script>
+</body>
+</html>
