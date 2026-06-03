@@ -4,38 +4,382 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>제어공학 오버슈트 시뮬레이터</title>
+
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;font-family:Arial,'Noto Sans KR',sans-serif;background:#0b1020;color:#fff;overflow:hidden}.app{width:100vw;height:100vh;display:flex;flex-direction:column}.title{height:88px;min-height:88px;background:#050814;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border-bottom:1px solid #202946}.title h1{margin:0;font-size:30px;letter-spacing:-1px}.title p{margin:6px 0 0;color:#b9c4e8;font-size:14px}.main{flex:1;display:grid;grid-template-columns:280px 1fr;min-height:0}.panel{background:#10172a;border-right:1px solid #26314f;padding:14px;overflow:auto}.control{margin-bottom:16px}.control label{display:flex;justify-content:space-between;font-size:14px;color:#d9e2ff;margin-bottom:6px}.control b{color:#fff}input[type=range]{width:100%}.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 16px}button{height:36px;border:0;border-radius:9px;font-weight:800;background:#fff;color:#10172a}.info{background:#0b1020;border:1px solid #26314f;border-radius:12px;padding:12px;font-size:13px;line-height:1.55;color:#d9e2ff}.info .num{color:#fff;font-weight:900}.scene{position:relative;background:linear-gradient(180deg,#111936,#0c1228);overflow:hidden}.chartWrap{position:absolute;left:24px;right:24px;top:24px;height:54%;background:#f8fafc;border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.35);overflow:hidden}.blockWrap{position:absolute;left:24px;right:24px;bottom:24px;height:34%;background:#0e1730;border:1px solid #2b3a61;border-radius:16px;padding:14px;display:grid;grid-template-columns:1.1fr .9fr;gap:16px}.formula{background:#071023;border-radius:12px;padding:13px;color:#d9e2ff;font-size:15px;line-height:1.7}.formula strong{color:white}.massBox{position:relative;background:#eef3ff;border-radius:12px;overflow:hidden}.track{position:absolute;left:7%;right:7%;top:62%;height:5px;background:#b8c1d9;border-radius:4px}.mass{position:absolute;top:44%;width:54px;height:54px;margin-top:-27px;border-radius:12px;background:#ffcf35;box-shadow:0 9px 20px rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;color:#1f2937;font-weight:900}.spring{position:absolute;left:6%;top:39%;height:30px;transform:translateY(-15px)}.damper{position:absolute;left:6%;top:56%;height:42px;transform:translateY(-21px)}.targetLine{position:absolute;top:28%;bottom:18%;width:3px;background:#ef4444;opacity:.8}.massLabel{position:absolute;left:10px;top:9px;color:#1f2937;font-size:13px;font-weight:800}.caption{position:absolute;left:0;right:0;bottom:8px;text-align:center;color:#334155;font-size:13px;font-weight:800}svg{width:100%;height:100%;display:block}.grid{stroke:#e5e7eb;stroke-width:1}.axis{stroke:#111827;stroke-width:2}.step{stroke:#ef4444;stroke-width:3;stroke-dasharray:7 5}.resp{fill:none;stroke:#2563eb;stroke-width:4;stroke-linecap:round}.overshoot{fill:rgba(239,68,68,.12);stroke:#ef4444;stroke-width:2;stroke-dasharray:5 4}.settle{fill:rgba(34,197,94,.10);stroke:#22c55e;stroke-width:2;stroke-dasharray:4 4}.movingDot{fill:#2563eb;stroke:white;stroke-width:3}.label{font-size:13px;font-weight:800;fill:#111827}.small{font-size:12px;fill:#374151}@media(max-width:760px){.title{height:76px;min-height:76px}.title h1{font-size:22px}.title p{font-size:12px}.main{grid-template-columns:120px 1fr}.panel{padding:8px}.control{margin-bottom:10px}.control label{font-size:11px;display:block}.control b{display:block}.btns{grid-template-columns:1fr}.info{display:none}.chartWrap{left:6px;right:6px;top:8px;height:56%}.blockWrap{left:6px;right:6px;bottom:8px;height:35%;grid-template-columns:1fr}.formula{display:none}.massBox{min-height:120px}.label{font-size:11px}.small{font-size:10px}}
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  font-family:Arial,'Noto Sans KR',sans-serif;
+  background:#0b1020;
+  color:#fff;
+  overflow:hidden;
+}
+.app{
+  width:100vw;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+.title{
+  height:88px;
+  min-height:88px;
+  background:#050814;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  border-bottom:1px solid #202946;
+}
+.title h1{
+  margin:0;
+  font-size:30px;
+  letter-spacing:-1px;
+}
+.title p{
+  margin:6px 0 0;
+  color:#b9c4e8;
+  font-size:14px;
+}
+.main{
+  flex:1;
+  display:grid;
+  grid-template-columns:280px 1fr;
+  min-height:0;
+}
+.panel{
+  background:#10172a;
+  border-right:1px solid #26314f;
+  padding:14px;
+  overflow:auto;
+}
+.control{
+  margin-bottom:16px;
+}
+.control label{
+  display:flex;
+  justify-content:space-between;
+  font-size:14px;
+  color:#d9e2ff;
+  margin-bottom:6px;
+}
+.control b{
+  color:#fff;
+}
+input[type=range]{
+  width:100%;
+}
+.btns{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin:12px 0 16px;
+}
+button{
+  height:36px;
+  border:0;
+  border-radius:9px;
+  font-weight:800;
+  background:#fff;
+  color:#10172a;
+}
+.info{
+  background:#0b1020;
+  border:1px solid #26314f;
+  border-radius:12px;
+  padding:12px;
+  font-size:13px;
+  line-height:1.65;
+  color:#d9e2ff;
+}
+.info .num{
+  color:#fff;
+  font-weight:900;
+}
+.scene{
+  position:relative;
+  background:linear-gradient(180deg,#111936,#0c1228);
+  overflow:hidden;
+}
+.chartWrap{
+  position:absolute;
+  left:24px;
+  right:24px;
+  top:24px;
+  height:54%;
+  background:#f8fafc;
+  border-radius:16px;
+  box-shadow:0 18px 50px rgba(0,0,0,.35);
+  overflow:hidden;
+}
+.blockWrap{
+  position:absolute;
+  left:24px;
+  right:24px;
+  bottom:24px;
+  height:34%;
+  background:#0e1730;
+  border:1px solid #2b3a61;
+  border-radius:16px;
+  padding:14px;
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  gap:16px;
+}
+.formula{
+  background:#071023;
+  border-radius:12px;
+  padding:13px;
+  color:#d9e2ff;
+  font-size:15px;
+  line-height:1.7;
+}
+.formula strong{
+  color:white;
+}
+.massBox{
+  position:relative;
+  background:#eef3ff;
+  border-radius:12px;
+  overflow:hidden;
+}
+.track{
+  position:absolute;
+  left:7%;
+  right:7%;
+  top:62%;
+  height:5px;
+  background:#b8c1d9;
+  border-radius:4px;
+}
+.mass{
+  position:absolute;
+  top:44%;
+  width:54px;
+  height:54px;
+  margin-top:-27px;
+  border-radius:12px;
+  background:#ffcf35;
+  box-shadow:0 9px 20px rgba(0,0,0,.28);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#1f2937;
+  font-weight:900;
+}
+.spring{
+  position:absolute;
+  left:6%;
+  top:39%;
+  height:30px;
+  transform:translateY(-15px);
+}
+.damper{
+  position:absolute;
+  left:6%;
+  top:56%;
+  height:42px;
+  transform:translateY(-21px);
+}
+.targetLine{
+  position:absolute;
+  top:28%;
+  bottom:18%;
+  width:3px;
+  background:#ef4444;
+  opacity:.8;
+}
+.massLabel{
+  position:absolute;
+  left:10px;
+  top:9px;
+  color:#1f2937;
+  font-size:13px;
+  font-weight:800;
+}
+.caption{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:8px;
+  text-align:center;
+  color:#334155;
+  font-size:13px;
+  font-weight:800;
+}
+svg{
+  width:100%;
+  height:100%;
+  display:block;
+}
+.grid{
+  stroke:#e5e7eb;
+  stroke-width:1;
+}
+.axis{
+  stroke:#111827;
+  stroke-width:2;
+}
+.step{
+  stroke:#ef4444;
+  stroke-width:3;
+  stroke-dasharray:7 5;
+}
+.resp{
+  fill:none;
+  stroke:#2563eb;
+  stroke-width:4;
+  stroke-linecap:round;
+}
+.overshoot{
+  fill:rgba(239,68,68,.12);
+  stroke:#ef4444;
+  stroke-width:2;
+  stroke-dasharray:5 4;
+}
+.settle{
+  fill:rgba(34,197,94,.10);
+  stroke:#22c55e;
+  stroke-width:2;
+  stroke-dasharray:4 4;
+}
+.movingDot{
+  fill:#2563eb;
+  stroke:white;
+  stroke-width:3;
+}
+.label{
+  font-size:13px;
+  font-weight:800;
+  fill:#111827;
+}
+.small{
+  font-size:12px;
+  fill:#374151;
+}
+
+@media(max-width:760px){
+  .title{
+    height:76px;
+    min-height:76px;
+  }
+  .title h1{
+    font-size:22px;
+  }
+  .title p{
+    font-size:12px;
+  }
+  .main{
+    grid-template-columns:120px 1fr;
+  }
+  .panel{
+    padding:8px;
+  }
+  .control{
+    margin-bottom:10px;
+  }
+  .control label{
+    font-size:11px;
+    display:block;
+  }
+  .control b{
+    display:block;
+  }
+  .btns{
+    grid-template-columns:1fr;
+  }
+  .info{
+    display:none;
+  }
+  .chartWrap{
+    left:6px;
+    right:6px;
+    top:8px;
+    height:56%;
+  }
+  .blockWrap{
+    left:6px;
+    right:6px;
+    bottom:8px;
+    height:35%;
+    grid-template-columns:1fr;
+  }
+  .formula{
+    display:none;
+  }
+  .massBox{
+    min-height:120px;
+  }
+  .label{
+    font-size:11px;
+  }
+  .small{
+    font-size:10px;
+  }
+}
 </style>
 </head>
+
 <body>
 <div class="app">
   <header class="title">
     <h1>제어공학 오버슈트 애니메이션 시뮬레이터</h1>
     <p>2차 시스템의 감쇠비 ζ와 고유진동수 ωₙ을 바꾸며 응답을 관찰</p>
   </header>
+
   <div class="main">
     <aside class="panel">
-      <div class="control"><label>감쇠비 ζ <b id="zetaVal">0.30</b></label><input id="zeta" type="range" min="0.05" max="1.50" step="0.01" value="0.30"></div>
-      <div class="control"><label>고유진동수 ωₙ <b id="wnVal">4.0</b></label><input id="wn" type="range" min="0.5" max="10" step="0.1" value="4.0"></div>
-      <div class="control"><label>목표값 r <b id="targetVal">1.0</b></label><input id="target" type="range" min="0.5" max="2.0" step="0.1" value="1.0"></div>
-      <div class="control"><label>재생속도 <b id="playVal">1.0x</b></label><input id="playSpeed" type="range" min="0.3" max="3.0" step="0.1" value="1.0"></div>
-      <div class="btns"><button id="playBtn">일시정지</button><button id="resetBtn">처음부터</button></div>
+      <div class="control">
+        <label>감쇠비 ζ <b id="zetaVal">0.30</b></label>
+        <input id="zeta" type="range" min="0.05" max="1.50" step="0.01" value="0.30">
+      </div>
+
+      <div class="control">
+        <label>고유진동수 ωₙ <b id="wnVal">4.0</b></label>
+        <input id="wn" type="range" min="0.5" max="10" step="0.1" value="4.0">
+      </div>
+
+      <div class="control">
+        <label>목표값 r <b id="targetVal">1.0</b></label>
+        <input id="target" type="range" min="0.5" max="2.0" step="0.1" value="1.0">
+      </div>
+
+      <div class="control">
+        <label>재생속도 <b id="playVal">1.0x</b></label>
+        <input id="playSpeed" type="range" min="0.3" max="3.0" step="0.1" value="1.0">
+      </div>
+
+      <div class="btns">
+        <button id="playBtn">일시정지</button>
+        <button id="resetBtn">처음부터</button>
+      </div>
+
       <div class="info">
         <div>최대 오버슈트: <span class="num" id="osVal">0%</span></div>
         <div>피크 시간 Tp: <span class="num" id="tpVal">-</span></div>
-        <div>정착 시간 Ts(2%): <span class="num" id="tsVal">-</span></div>
+        <div>정착 시간 Ts(2%, 실제): <span class="num" id="tsVal">-</span></div>
+        <div>근사식 Ts≈4/(ζωₙ): <span class="num" id="tsApproxVal">-</span></div>
         <div>감쇠 형태: <span class="num" id="modeVal">-</span></div>
       </div>
     </aside>
+
     <section class="scene">
       <div class="chartWrap">
         <svg id="chart" viewBox="0 0 900 420">
-          <defs><clipPath id="clip"><rect x="70" y="30" width="790" height="330" rx="4"/></clipPath></defs>
+          <defs>
+            <clipPath id="clip">
+              <rect x="70" y="30" width="790" height="330" rx="4"/>
+            </clipPath>
+          </defs>
+
           <rect x="0" y="0" width="900" height="420" fill="#f8fafc"/>
           <g id="grid"></g>
+
           <line x1="70" y1="360" x2="860" y2="360" class="axis"/>
           <line x1="70" y1="30" x2="70" y2="360" class="axis"/>
+
           <g clip-path="url(#clip)">
             <rect id="settleBand" class="settle" x="70" y="0" width="790" height="0"/>
             <line id="targetLineChart" x1="70" y1="0" x2="860" y2="0" class="step"/>
@@ -43,6 +387,7 @@
             <path id="tracePath" class="resp" style="stroke:#0ea5e9;stroke-width:5" d=""/>
             <circle id="dot" class="movingDot" cx="70" cy="360" r="7"/>
           </g>
+
           <text x="450" y="23" text-anchor="middle" class="label">단위 계단 응답 y(t)</text>
           <text x="838" y="388" class="small">t [s]</text>
           <text x="17" y="45" class="small">y</text>
@@ -50,21 +395,29 @@
           <text id="peakText" x="0" y="0" class="label">Overshoot</text>
         </svg>
       </div>
+
       <div class="blockWrap">
         <div class="formula">
           <strong>표준 2차 폐루프 전달함수</strong><br>
           G(s)= ωₙ² / (s² + 2ζωₙs + ωₙ²)<br>
           ζ &lt; 1이면 목표값을 지나쳤다가 감쇠하며 수렴함<br>
-          ζ가 작을수록 오버슈트가 커지고 진동이 오래 감
+          ζ가 작을수록 오버슈트가 커지고 진동이 오래 감<br>
+          정착시간은 실제 응답 기준과 교과서 근사식이 약간 다를 수 있음
         </div>
+
         <div class="massBox">
           <div class="massLabel">질량-스프링-댐퍼 비유</div>
-          <svg class="spring" id="spring" width="220" height="30" viewBox="0 0 220 30"><path id="springPath" d="" fill="none" stroke="#334155" stroke-width="4" stroke-linecap="round"/></svg>
+
+          <svg class="spring" id="spring" width="220" height="30" viewBox="0 0 220 30">
+            <path id="springPath" d="" fill="none" stroke="#334155" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+
           <svg class="damper" id="damper" width="220" height="42" viewBox="0 0 220 42">
             <path id="damperRod" d="" fill="none" stroke="#475569" stroke-width="4" stroke-linecap="round"/>
             <rect id="damperBody" x="0" y="8" width="42" height="26" rx="4" fill="#cbd5e1" stroke="#475569" stroke-width="3"/>
             <line id="damperPiston" x1="0" y1="6" x2="0" y2="36" stroke="#475569" stroke-width="4" stroke-linecap="round"/>
           </svg>
+
           <div class="targetLine" id="targetLineMass"></div>
           <div class="track"></div>
           <div class="mass" id="mass">y</div>
@@ -74,70 +427,292 @@
     </section>
   </div>
 </div>
+
 <script>
-const $=id=>document.getElementById(id);
-const zeta=$('zeta'),wn=$('wn'),target=$('target'),playSpeed=$('playSpeed');
-const responsePath=$('responsePath'),tracePath=$('tracePath'),dot=$('dot'),grid=$('grid');
-const zetaVal=$('zetaVal'),wnVal=$('wnVal'),targetVal=$('targetVal'),playVal=$('playVal');
-const osVal=$('osVal'),tpVal=$('tpVal'),tsVal=$('tsVal'),modeVal=$('modeVal'),targetLineChart=$('targetLineChart'),targetText=$('targetText'),peakText=$('peakText'),settleBand=$('settleBand');
-const mass=$('mass'),targetLineMass=$('targetLineMass'),springPath=$('springPath'),damper=$('damper'),damperRod=$('damperRod'),damperBody=$('damperBody'),damperPiston=$('damperPiston'),playBtn=$('playBtn'),resetBtn=$('resetBtn'),caption=$('caption');
-let data=[],tmax=8,ymax=1.6,start=performance.now(),paused=false,pauseAt=0;
-function yResponse(t,z,wnv,r){
-  if(z<1){const wd=wnv*Math.sqrt(1-z*z);const phi=Math.atan(Math.sqrt(1-z*z)/z);return r*(1-(1/Math.sqrt(1-z*z))*Math.exp(-z*wnv*t)*Math.sin(wd*t+phi));}
-  if(Math.abs(z-1)<1e-6){return r*(1-Math.exp(-wnv*t)*(1+wnv*t));}
-  const a=Math.sqrt(z*z-1);const s1=-wnv*(z-a),s2=-wnv*(z+a);return r*(1+(s2*Math.exp(s1*t)-s1*Math.exp(s2*t))/(s1-s2));
-}
-function sx(t){return 70+t/tmax*790}function sy(y){return 360-y/ymax*330}
-function pathFrom(arr,upto=arr.length){let d='';for(let i=0;i<upto;i++){d+=(i?'L':'M')+sx(arr[i].t).toFixed(1)+' '+sy(arr[i].y).toFixed(1)+' '}return d}
-function makeGrid(){let s='';for(let i=0;i<=8;i++){let x=70+i*790/8;s+=`<line x1="${x}" y1="30" x2="${x}" y2="360" class="grid"/>`;}for(let j=0;j<=6;j++){let y=30+j*330/6;s+=`<line x1="70" y1="${y}" x2="860" y2="${y}" class="grid"/>`;}grid.innerHTML=s}
-function recompute(){
-  const z=+zeta.value, w=+wn.value, r=+target.value;
-  zetaVal.textContent=z.toFixed(2);wnVal.textContent=w.toFixed(1);targetVal.textContent=r.toFixed(1);playVal.textContent=(+playSpeed.value).toFixed(1)+'x';
-  tmax=Math.max(4,Math.min(16,8/w*4)); data=[]; let peak=-Infinity,peakT=0,ts=null;
-  for(let i=0;i<=700;i++){let t=tmax*i/700,y=yResponse(t,z,w,r);data.push({t,y}); if(y>peak){peak=y;peakT=t}}
-  ymax=Math.max(r*1.45,peak*1.16,1.2);
-  for(let i=data.length-1;i>=0;i--){if(Math.abs(data[i].y-r)>0.02*r){ts=data[Math.min(i+1,data.length-1)].t;break}} if(ts===null)ts=0;
-  const os=Math.max(0,(peak-r)/r*100);
-  osVal.textContent=os.toFixed(1)+'%'; tpVal.textContent=z<1?peakT.toFixed(2)+' s':'없음'; tsVal.textContent=ts.toFixed(2)+' s';
-  modeVal.textContent=z<1?'부족감쇠':(z===1?'임계감쇠':'과감쇠');
-  responsePath.setAttribute('d',pathFrom(data));
-  targetLineChart.setAttribute('y1',sy(r));targetLineChart.setAttribute('y2',sy(r));
-  targetText.setAttribute('y',sy(r)-8);targetText.textContent='목표값 r='+r.toFixed(1);
-  settleBand.setAttribute('y',sy(r*1.02));settleBand.setAttribute('height',Math.abs(sy(r*.98)-sy(r*1.02)));settleBand.setAttribute('x',70);settleBand.setAttribute('width',790);
-  peakText.setAttribute('x',sx(peakT)+8);peakText.setAttribute('y',sy(peak)-10);peakText.textContent=os>0.5?'오버슈트 '+os.toFixed(1)+'%':'';
-  targetLineMass.style.left=(7+Math.min(86,r/2.2*86))+'%';
-}
-function drawSpring(left,width){let n=9,amp=11,y=15,w=Math.max(30,width),d=`M0 ${y} `;for(let i=0;i<=n*2;i++){let x=12+i*(w-24)/(n*2);let yy=i%2?y-amp:y+amp;d+=`L${x.toFixed(1)} ${yy.toFixed(1)} `}d+=`L${w} ${y}`;springPath.setAttribute('d',d);document.getElementById('spring').style.left=left+'px';document.getElementById('spring').setAttribute('width',w);document.getElementById('spring').setAttribute('viewBox',`0 0 ${w} 30`)}
-function drawDamper(left,width){
-  const w=Math.max(50,width);
-  damper.style.left=left+'px';
-  damper.setAttribute('width',w);
-  damper.setAttribute('viewBox',`0 0 ${w} 42`);
-  damperRod.setAttribute('d',`M0 21 L${Math.max(8,w-42)} 21`);
-  damperBody.setAttribute('x',Math.max(8,w-42));
-  damperPiston.setAttribute('x1',Math.max(8,w-18));
-  damperPiston.setAttribute('x2',Math.max(8,w-18));
-}
-function animate(now){
-  if(!paused){const elapsed=(now-start)/1000*(+playSpeed.value);let t=elapsed%tmax;let idx=Math.min(data.length-1,Math.floor(t/tmax*(data.length-1)));let p=data[idx];
-    tracePath.setAttribute('d',pathFrom(data,idx+1));dot.setAttribute('cx',sx(p.t));dot.setAttribute('cy',sy(p.y));
-    const r=+target.value; let xPct=7+Math.max(0,Math.min(86,p.y/2.2*86));mass.style.left=`calc(${xPct}% - 27px)`;
-    const box=document.querySelector('.massBox').getBoundingClientRect();
-    const linkWidth=Math.max(30,box.width*xPct/100-47);
-    drawSpring(20,linkWidth);
-    drawDamper(20,linkWidth);
-    caption.textContent=p.y>r*1.02?'목표값을 지나침: 오버슈트 발생':(Math.abs(p.y-r)<r*.02?'목표값 근처에 정착':'목표값을 향해 이동 중');
+const $ = id => document.getElementById(id);
+
+const zeta = $('zeta');
+const wn = $('wn');
+const target = $('target');
+const playSpeed = $('playSpeed');
+
+const responsePath = $('responsePath');
+const tracePath = $('tracePath');
+const dot = $('dot');
+const grid = $('grid');
+
+const zetaVal = $('zetaVal');
+const wnVal = $('wnVal');
+const targetVal = $('targetVal');
+const playVal = $('playVal');
+
+const osVal = $('osVal');
+const tpVal = $('tpVal');
+const tsVal = $('tsVal');
+const tsApproxVal = $('tsApproxVal');
+const modeVal = $('modeVal');
+
+const targetLineChart = $('targetLineChart');
+const targetText = $('targetText');
+const peakText = $('peakText');
+const settleBand = $('settleBand');
+
+const mass = $('mass');
+const targetLineMass = $('targetLineMass');
+const springPath = $('springPath');
+const damper = $('damper');
+const damperRod = $('damperRod');
+const damperBody = $('damperBody');
+const damperPiston = $('damperPiston');
+const playBtn = $('playBtn');
+const resetBtn = $('resetBtn');
+const caption = $('caption');
+
+let data = [];
+let tmax = 8;
+let ymax = 1.6;
+let start = performance.now();
+let paused = false;
+
+function yResponse(t, z, wnv, r) {
+  if (z < 1) {
+    const wd = wnv * Math.sqrt(1 - z * z);
+    const phi = Math.atan(Math.sqrt(1 - z * z) / z);
+
+    return r * (
+      1 -
+      (1 / Math.sqrt(1 - z * z)) *
+      Math.exp(-z * wnv * t) *
+      Math.sin(wd * t + phi)
+    );
   }
-  requestAnimationFrame(animate)
+
+  if (Math.abs(z - 1) < 1e-6) {
+    return r * (1 - Math.exp(-wnv * t) * (1 + wnv * t));
+  }
+
+  const a = Math.sqrt(z * z - 1);
+  const s1 = -wnv * (z - a);
+  const s2 = -wnv * (z + a);
+
+  return r * (
+    1 +
+    (s2 * Math.exp(s1 * t) - s1 * Math.exp(s2 * t)) / (s1 - s2)
+  );
 }
-[zeta,wn,target,playSpeed].forEach(e=>e.addEventListener('input',()=>{
-  const wasPaused=paused;
-  recompute();
-  if(!wasPaused){start=performance.now();}
-}));
-playBtn.onclick=()=>{paused=!paused;playBtn.textContent=paused?'재생':'일시정지';if(!paused)start=performance.now()-pauseAt};
-resetBtn.onclick=()=>{start=performance.now();tracePath.setAttribute('d','')};
-makeGrid();recompute();requestAnimationFrame(animate);
+
+function sx(t) {
+  return 70 + t / tmax * 790;
+}
+
+function sy(y) {
+  return 360 - y / ymax * 330;
+}
+
+function pathFrom(arr, upto = arr.length) {
+  let d = '';
+
+  for (let i = 0; i < upto; i++) {
+    d += (i ? 'L' : 'M') +
+      sx(arr[i].t).toFixed(1) + ' ' +
+      sy(arr[i].y).toFixed(1) + ' ';
+  }
+
+  return d;
+}
+
+function makeGrid() {
+  let s = '';
+
+  for (let i = 0; i <= 8; i++) {
+    let x = 70 + i * 790 / 8;
+    s += `<line x1="${x}" y1="30" x2="${x}" y2="360" class="grid"/>`;
+  }
+
+  for (let j = 0; j <= 6; j++) {
+    let y = 30 + j * 330 / 6;
+    s += `<line x1="70" y1="${y}" x2="860" y2="${y}" class="grid"/>`;
+  }
+
+  grid.innerHTML = s;
+}
+
+function recompute() {
+  const z = +zeta.value;
+  const w = +wn.value;
+  const r = +target.value;
+
+  zetaVal.textContent = z.toFixed(2);
+  wnVal.textContent = w.toFixed(1);
+  targetVal.textContent = r.toFixed(1);
+  playVal.textContent = (+playSpeed.value).toFixed(1) + 'x';
+
+  tmax = Math.max(4, Math.min(16, 8 / w * 4));
+
+  data = [];
+
+  let peak = -Infinity;
+  let peakT = 0;
+  let ts = null;
+
+  for (let i = 0; i <= 700; i++) {
+    let t = tmax * i / 700;
+    let y = yResponse(t, z, w, r);
+
+    data.push({ t, y });
+
+    if (y > peak) {
+      peak = y;
+      peakT = t;
+    }
+  }
+
+  ymax = Math.max(r * 1.45, peak * 1.16, 1.2);
+
+  for (let i = data.length - 1; i >= 0; i--) {
+    if (Math.abs(data[i].y - r) > 0.02 * r) {
+      ts = data[Math.min(i + 1, data.length - 1)].t;
+      break;
+    }
+  }
+
+  if (ts === null) {
+    ts = 0;
+  }
+
+  const os = Math.max(0, (peak - r) / r * 100);
+
+  let tsApprox = '-';
+
+  if (z > 0) {
+    tsApprox = (4 / (z * w)).toFixed(2) + ' s';
+  }
+
+  osVal.textContent = os.toFixed(1) + '%';
+
+  tpVal.textContent = z < 1 ? peakT.toFixed(2) + ' s' : '없음';
+
+  tsVal.textContent = ts.toFixed(2) + ' s';
+
+  tsApproxVal.textContent = tsApprox;
+
+  modeVal.textContent =
+    z < 1 ? '부족감쇠' :
+    (Math.abs(z - 1) < 0.001 ? '임계감쇠' : '과감쇠');
+
+  responsePath.setAttribute('d', pathFrom(data));
+
+  targetLineChart.setAttribute('y1', sy(r));
+  targetLineChart.setAttribute('y2', sy(r));
+
+  targetText.setAttribute('y', sy(r) - 8);
+  targetText.textContent = '목표값 r=' + r.toFixed(1);
+
+  settleBand.setAttribute('y', sy(r * 1.02));
+  settleBand.setAttribute('height', Math.abs(sy(r * .98) - sy(r * 1.02)));
+  settleBand.setAttribute('x', 70);
+  settleBand.setAttribute('width', 790);
+
+  peakText.setAttribute('x', sx(peakT) + 8);
+  peakText.setAttribute('y', sy(peak) - 10);
+  peakText.textContent = os > 0.5 ? '오버슈트 ' + os.toFixed(1) + '%' : '';
+
+  targetLineMass.style.left = (7 + Math.min(86, r / 2.2 * 86)) + '%';
+}
+
+function drawSpring(left, width) {
+  let n = 9;
+  let amp = 11;
+  let y = 15;
+  let w = Math.max(30, width);
+
+  let d = `M0 ${y} `;
+
+  for (let i = 0; i <= n * 2; i++) {
+    let x = 12 + i * (w - 24) / (n * 2);
+    let yy = i % 2 ? y - amp : y + amp;
+    d += `L${x.toFixed(1)} ${yy.toFixed(1)} `;
+  }
+
+  d += `L${w} ${y}`;
+
+  springPath.setAttribute('d', d);
+  document.getElementById('spring').style.left = left + 'px';
+  document.getElementById('spring').setAttribute('width', w);
+  document.getElementById('spring').setAttribute('viewBox', `0 0 ${w} 30`);
+}
+
+function drawDamper(left, width) {
+  const w = Math.max(50, width);
+
+  damper.style.left = left + 'px';
+  damper.setAttribute('width', w);
+  damper.setAttribute('viewBox', `0 0 ${w} 42`);
+
+  damperRod.setAttribute('d', `M0 21 L${Math.max(8, w - 42)} 21`);
+  damperBody.setAttribute('x', Math.max(8, w - 42));
+  damperPiston.setAttribute('x1', Math.max(8, w - 18));
+  damperPiston.setAttribute('x2', Math.max(8, w - 18));
+}
+
+function animate(now) {
+  if (!paused) {
+    const elapsed = (now - start) / 1000 * (+playSpeed.value);
+    let t = elapsed % tmax;
+    let idx = Math.min(data.length - 1, Math.floor(t / tmax * (data.length - 1)));
+    let p = data[idx];
+
+    tracePath.setAttribute('d', pathFrom(data, idx + 1));
+
+    dot.setAttribute('cx', sx(p.t));
+    dot.setAttribute('cy', sy(p.y));
+
+    const r = +target.value;
+
+    let xPct = 7 + Math.max(0, Math.min(86, p.y / 2.2 * 86));
+
+    mass.style.left = `calc(${xPct}% - 27px)`;
+
+    const box = document.querySelector('.massBox').getBoundingClientRect();
+    const linkWidth = Math.max(30, box.width * xPct / 100 - 47);
+
+    drawSpring(20, linkWidth);
+    drawDamper(20, linkWidth);
+
+    caption.textContent =
+      p.y > r * 1.02 ? '목표값을 지나침: 오버슈트 발생' :
+      (Math.abs(p.y - r) < r * .02 ? '목표값 근처에 정착' : '목표값을 향해 이동 중');
+  }
+
+  requestAnimationFrame(animate);
+}
+
+[zeta, wn, target, playSpeed].forEach(e => {
+  e.addEventListener('input', () => {
+    recompute();
+    if (!paused) {
+      start = performance.now();
+    }
+  });
+});
+
+playBtn.onclick = () => {
+  paused = !paused;
+  playBtn.textContent = paused ? '재생' : '일시정지';
+
+  if (!paused) {
+    start = performance.now();
+  }
+};
+
+resetBtn.onclick = () => {
+  start = performance.now();
+  tracePath.setAttribute('d', '');
+};
+
+makeGrid();
+recompute();
+requestAnimationFrame(animate);
 </script>
 </body>
 </html>
